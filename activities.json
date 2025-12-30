@@ -3,6 +3,7 @@
     "title": "Actividad de prueba",
     "course": "General",
     "topic": "Prueba",
+    "tags": ["demo"],
     "file": "activities/prueba.html"
   }
 ]
