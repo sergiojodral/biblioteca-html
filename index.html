@@ -1,44 +1,83 @@
 <!doctype html>
 <html lang="es">
-
-<link rel="manifest" href="manifest.json">
- 
-  <head>
+<head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Biblioteca de HTML — Sergio Jodral</title>
+
+  <!-- Manifest PWA -->
+  <link rel="manifest" href="manifest.json">
+
   <style>
-    :root{--bg:#0b1020;--card:#121a33;--text:#eef2ff;--muted:#b9c2ff;--accent:#7aa2ff;}
-    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--text);}
-    header{padding:18px 16px;border-bottom:1px solid rgba(255,255,255,.12);position:sticky;top:0;background:rgba(11,16,32,.9);backdrop-filter: blur(8px);}
+    :root{
+      --bg:#0b1020;
+      --card:#121a33;
+      --text:#eef2ff;
+      --muted:#b9c2ff;
+      --accent:#7aa2ff;
+    }
+    body{
+      margin:0;
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;
+      background:var(--bg);
+      color:var(--text);
+    }
+    header{
+      padding:18px 16px;
+      border-bottom:1px solid rgba(255,255,255,.12);
+      position:sticky;
+      top:0;
+      background:rgba(11,16,32,.9);
+      backdrop-filter: blur(8px);
+    }
     h1{margin:0;font-size:18px}
     p{margin:6px 0 0;color:var(--muted);font-size:14px}
     main{padding:16px;max-width:980px;margin:0 auto}
-    .card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:14px}
+    .card{
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:16px;
+      padding:14px
+    }
     a{color:var(--accent)}
     h3{margin:0 0 8px 0}
+    input, select{
+      font-family:inherit;
+    }
   </style>
 </head>
-<body>
-  <header>
-    <h1>📚 Biblioteca de actividades (HTML)</h1>
-    <p>Repositorio personal — abre actividades desde el móvil como si fuera una app.</p>
-  </header>
 
-  <main>
+<body>
+
+<header>
+  <h1>📚 Biblioteca de actividades (HTML)</h1>
+  <p>Repositorio personal — abre actividades desde el móvil como si fuera una app.</p>
+</header>
+
+<main>
+  <!-- Buscador y filtro -->
   <div class="card" style="margin-bottom:12px">
-    <input id="q" type="search" placeholder="Buscar por título, tema, etiquetas..."
-           style="width:100%;padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,.14);background:rgba(0,0,0,.2);color:inherit;font-size:16px;outline:none;">
+    <input id="q" type="search"
+      placeholder="Buscar por título, tema, etiquetas..."
+      style="width:100%;padding:12px;border-radius:12px;
+             border:1px solid rgba(255,255,255,.14);
+             background:rgba(0,0,0,.2);
+             color:inherit;font-size:16px;outline:none;">
+
     <div style="margin-top:10px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
       <label style="color:var(--muted);font-size:14px">Curso:</label>
       <select id="course"
-              style="padding:10px;border-radius:12px;border:1px solid rgba(255,255,255,.14);background:rgba(0,0,0,.2);color:inherit;">
+        style="padding:10px;border-radius:12px;
+               border:1px solid rgba(255,255,255,.14);
+               background:rgba(0,0,0,.2);
+               color:inherit;">
         <option value="">Todos</option>
       </select>
       <span id="count" style="color:var(--muted);font-size:14px"></span>
     </div>
   </div>
 
+  <!-- Listado -->
   <div id="listado">
     <p>Cargando actividades…</p>
   </div>
@@ -52,10 +91,10 @@ function render() {
   const course = document.getElementById('course').value;
 
   const filtered = ALL.filter(act => {
-    const hayCurso = !course || act.course === course;
-    const texto = `${act.title} ${act.topic} ${(act.tags || []).join(' ')}`.toLowerCase();
-    const hayBusqueda = !q || texto.includes(q);
-    return hayCurso && hayBusqueda;
+    const okCourse = !course || act.course === course;
+    const text = `${act.title} ${act.topic} ${(act.tags || []).join(' ')}`.toLowerCase();
+    const okSearch = !q || text.includes(q);
+    return okCourse && okSearch;
   });
 
   const cont = document.getElementById('listado');
@@ -85,7 +124,8 @@ function render() {
     });
   }
 
-  document.getElementById('count').textContent = `${filtered.length} actividad(es)`;
+  document.getElementById('count').textContent =
+    `${filtered.length} actividad(es)`;
 }
 
 function fillCourses() {
@@ -105,7 +145,6 @@ fetch('activities.json')
     ALL = data;
     fillCourses();
     render();
-
     document.getElementById('q').addEventListener('input', render);
     document.getElementById('course').addEventListener('change', render);
   })
@@ -115,6 +154,13 @@ fetch('activities.json')
   });
 </script>
 
-  
+<!-- REGISTRO DEL SERVICE WORKER (PASO 9.2) -->
+<script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('service-worker.js');
+}
+</script>
+
 </body>
 </html>
+
