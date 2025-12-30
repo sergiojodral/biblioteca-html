@@ -22,36 +22,96 @@
     <p>Repositorio personal — abre actividades desde el móvil como si fuera una app.</p>
   </header>
 
-  <main id="listado">
+  <main>
+  <div class="card" style="margin-bottom:12px">
+    <input id="q" type="search" placeholder="Buscar por título, tema, etiquetas..."
+           style="width:100%;padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,.14);background:rgba(0,0,0,.2);color:inherit;font-size:16px;outline:none;">
+    <div style="margin-top:10px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+      <label style="color:var(--muted);font-size:14px">Curso:</label>
+      <select id="course"
+              style="padding:10px;border-radius:12px;border:1px solid rgba(255,255,255,.14);background:rgba(0,0,0,.2);color:inherit;">
+        <option value="">Todos</option>
+      </select>
+      <span id="count" style="color:var(--muted);font-size:14px"></span>
+    </div>
+  </div>
+
+  <div id="listado">
     <p>Cargando actividades…</p>
-  </main>
+  </div>
+</main>
 
-  <script>
-  fetch('activities.json')
-    .then(res => res.json())
-    .then(data => {
-      const cont = document.getElementById('listado');
-      cont.innerHTML = '';
+<script>
+let ALL = [];
 
-      data.forEach(act => {
-        const card = document.createElement('div');
-        card.className = 'card';
-        card.style.marginBottom = '12px';
+function render() {
+  const q = (document.getElementById('q').value || '').toLowerCase().trim();
+  const course = document.getElementById('course').value;
 
-        card.innerHTML = `
-          <h3>${act.title}</h3>
-          <p><strong>Curso:</strong> ${act.course}</p>
-          <p><strong>Tema:</strong> ${act.topic}</p>
-          <p><a href="${act.file}">Abrir actividad</a></p>
-        `;
+  const filtered = ALL.filter(act => {
+    const hayCurso = !course || act.course === course;
+    const texto = `${act.title} ${act.topic} ${(act.tags || []).join(' ')}`.toLowerCase();
+    const hayBusqueda = !q || texto.includes(q);
+    return hayCurso && hayBusqueda;
+  });
 
-        cont.appendChild(card);
-      });
-    })
-    .catch(() => {
-      document.getElementById('listado').innerHTML =
-        '<p>Error al cargar el catálogo.</p>';
+  const cont = document.getElementById('listado');
+  cont.innerHTML = '';
+
+  if (filtered.length === 0) {
+    cont.innerHTML = '<p>No hay resultados.</p>';
+  } else {
+    filtered.forEach(act => {
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.style.marginBottom = '12px';
+
+      const tags = (act.tags && act.tags.length)
+        ? `<p><strong>Tags:</strong> ${act.tags.join(', ')}</p>`
+        : '';
+
+      card.innerHTML = `
+        <h3>${act.title}</h3>
+        <p><strong>Curso:</strong> ${act.course}</p>
+        <p><strong>Tema:</strong> ${act.topic}</p>
+        ${tags}
+        <p><a href="${act.file}">Abrir actividad</a></p>
+      `;
+
+      cont.appendChild(card);
     });
-  </script>
+  }
+
+  document.getElementById('count').textContent = `${filtered.length} actividad(es)`;
+}
+
+function fillCourses() {
+  const sel = document.getElementById('course');
+  const courses = [...new Set(ALL.map(a => a.course))].sort();
+  courses.forEach(c => {
+    const opt = document.createElement('option');
+    opt.value = c;
+    opt.textContent = c;
+    sel.appendChild(opt);
+  });
+}
+
+fetch('activities.json')
+  .then(res => res.json())
+  .then(data => {
+    ALL = data;
+    fillCourses();
+    render();
+
+    document.getElementById('q').addEventListener('input', render);
+    document.getElementById('course').addEventListener('change', render);
+  })
+  .catch(() => {
+    document.getElementById('listado').innerHTML =
+      '<p>Error al cargar el catálogo.</p>';
+  });
+</script>
+
+  
 </body>
 </html>
